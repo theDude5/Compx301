@@ -1,77 +1,85 @@
 import java.util.ArrayList;
 import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 
 public class Encoder{
-    private final int char_space = (int) Math.pow(2, 8);
-    private final Node[] root;
+    private final int char_space = (int) Math.pow(2, 8); // character space
+    private final Node[] root; // trie root
     private Node pointer;
-    private int count;
+    private int count; // phrase count
 
     private class Node {
         int rank; // phrase number
-        byte val; // character value
-        ArrayList<Node> next = new ArrayList<Node>(); //child nodes
-        ArrayList<Byte> next_Bytes = new ArrayList<Byte>(); //record of child node values 
+        byte key; // character value
+        ArrayList<Node> search_space = new ArrayList<Node>(); // child nodes
+        ArrayList<Byte> index = new ArrayList<Byte>(); // indexed of nodes 
         
-        private Node(int rank, byte val) {
+        private Node(int rank, byte key) {
             this.rank = rank;
-            this. val = val;
+            this.key = key;
         }
-        
-        public int query(byte value){
-            int temp = next_Bytes.indexOf(value);
-            if (temp >=0) { pointer = next.get(temp); }
-            else {
-                next.add(new Node(count++ ,value));
-                next_Bytes.add(value);
-                pointer = root[value];
+        public int query(byte value, boolean eof){
+            int temp = index.indexOf(value);
+            if (temp >=0 && !eof) { // continue search
+                pointer = search_space.get(temp);
+                return -1;
             }
-            return temp >=0 ? pointer.rank : rank ;
-        }    
+            else { // add new node, index node and go back to root
+                search_space.add(new Node(count++ ,value));
+                index.add(value);
+                pointer = root[value];
+                return rank; // return phrase rank
+            }
+        }
     }
-    
-    public Encoder () {
+
+    private Encoder () {
         root = new Node[char_space];
         pointer = null;
-        for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) count); }
+        for (count = 0; count < root.length; count++) { 
+            root[count] = new Node(count, (byte) count);
+        }
     }
 
-    public int query(byte value){
-        if (pointer == null) { 
-            pointer = root[value];
-            return pointer.rank;
-        }
-        return pointer.query(value);
+    private int query(byte value, boolean eof){
+        if (pointer == null) { pointer = root[value]; }
+        return pointer.query(value, eof);
     }
 
-    // Unit Tests
-    public static void main(String[] args){
-        if (args.length == 0){ 
-            System.out.println("Usage: java <filepath>");
-            return;
-        }
+    private void encode(File file){
         try {
-            FileInputStream file = new FileInputStream(args[0]);
-            if (file.available() == 0) {
+            FileInputStream in = new FileInputStream(file);
+            if (in.available() == 0) {
                 System.out.println("File is empty");
-                file.close();
+                in.close();
                 return;
             }
-            Encoder encoder = new Encoder();
-            System.out.println("Reading "+file.available()+" characters");
+            System.out.println("Reading "+in.available()+" characters");
             byte value;
-            int old_count = encoder.count, temp;
-            while (file.available() > 0) {
-                value = (byte) file.read();
-                temp = encoder.query(value);
-                if (old_count != encoder.count || file.available() == 0) { 
-                    System.out.println("Symbol :"+value+"\t Phrase Number : "+temp);
-                    old_count++;
-                } 
+            int temp = 0;
+            while (in.available() > 0) {
+                value = (byte) in.read();
+                temp = query(value, in.available() == 0);
+                if (temp >= 0) {
+                    System.out.println("Symbol : " + value + "\tOutput : " + temp);
+                }
             }
-            file.close();
+            in.close();
         }
         catch (IOException e) { System.err.println(e); }
+    }
+
+    public static void main(String[] args) throws FileNotFoundException { 
+        File file;
+        if (args.length == 0){ 
+            System.out.println("Usage: java <filepath>");
+            file = new File("tests/test1.txt");
+        }
+        else{ file = new File(args[0]); }
+        if (!file.exists()) { throw new FileNotFoundException(); }
+        Encoder encoder = new Encoder();
+        encoder.encode(file);
     }
 }
