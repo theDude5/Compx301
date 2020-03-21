@@ -1,18 +1,23 @@
+/**
+ * Implements the LZW data compression algorithm
+ * @author : Stuart Ussher (1060184)
+ */
 import java.util.ArrayList;
-import java.io.FileInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
-
+ 
 public class Encoder{
     private final int char_space = (int) Math.pow(2, 8); // character space
     private final Node[] root; // trie root
     private Node pointer;
-    private int count; // phrase count
-
+    private int count; // phrase counter
+    
     private class Node {
         int rank; // phrase number
-        byte key; // character value
+        byte key; // Symbol
         ArrayList<Node> search_space = new ArrayList<Node>(); // child nodes
         ArrayList<Byte> index = new ArrayList<Byte>(); // indexed of nodes 
         
@@ -20,66 +25,70 @@ public class Encoder{
             this.rank = rank;
             this.key = key;
         }
-        public int query(byte value, boolean eof){
+
+        public int query(byte value){
             int temp = index.indexOf(value);
-            if (temp >=0 && !eof) { // continue search
+            if (temp != -1) { // continue search
                 pointer = search_space.get(temp);
                 return -1;
             }
             else { // add new node, index node and go back to root
                 search_space.add(new Node(count++ ,value));
                 index.add(value);
-                pointer = root[value];
-                return rank; // return phrase rank
+                pointer = root[value]; // start new phrase beginning with unmatched value
+                return rank;
             }
         }
     }
 
     private Encoder () {
         root = new Node[char_space];
-        pointer = null;
-        for (count = 0; count < root.length; count++) { 
-            root[count] = new Node(count, (byte) count);
-        }
+        for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) count); }
     }
-
-    private int query(byte value, boolean eof){
-        if (pointer == null) { pointer = root[value]; }
-        return pointer.query(value, eof);
-    }
-
-    private void encode(File file){
-        try {
-            FileInputStream in = new FileInputStream(file);
-            if (in.available() == 0) {
-                System.out.println("File is empty");
-                in.close();
-                return;
-            }
-            System.out.println("Reading "+in.available()+" characters");
+    
+    /**
+     * Implements LZW algorithm
+     * @param file File to encode
+     * @throws IOException
+     */
+    public void encode(File file) throws IOException {
+        FileInputStream in = new FileInputStream(file);
+        if (in.available() > 0) {
+            FileOutputStream out = new FileOutputStream(new File(file.getPath().substring(0,file.getPath().indexOf('.'))+".lzw"));
             byte value;
-            int temp = 0;
+            int result;
+            pointer = root[(byte) in.read()];
             while (in.available() > 0) {
                 value = (byte) in.read();
-                temp = query(value, in.available() == 0);
-                if (temp >= 0) {
-                    System.out.println("Symbol : " + value + "\tOutput : " + temp);
+                result = pointer.query(value);
+                if (result != -1){
+                    System.out.println("Symbol : " + value + "\tOutput : " + result);
+                    out.write(result);
                 }
             }
-            in.close();
+            System.out.println("Symbol : " + pointer.key + "\tOutput : " + pointer.rank);
+            out.write(pointer.rank);
+            out.close();
         }
-        catch (IOException e) { System.err.println(e); }
+        in.close();
     }
 
-    public static void main(String[] args) throws FileNotFoundException { 
-        File file;
+    /**
+     * Test Implementation
+     * @param args
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
             System.out.println("Usage: java <filepath>");
-            file = new File("tests/test1.txt");
+            args = new String[]{"tests/test1.txt"};
         }
-        else{ file = new File(args[0]); }
-        if (!file.exists()) { throw new FileNotFoundException(); }
-        Encoder encoder = new Encoder();
-        encoder.encode(file);
+        File file = new File(args[0]);
+        if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
+        else {
+            Encoder encoder = new Encoder();
+            encoder.encode(file);
+        }
     }
 }
