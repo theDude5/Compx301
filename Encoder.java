@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
  
@@ -54,7 +55,9 @@ public class Encoder{
     public void encode(File file) throws IOException {
         FileInputStream in = new FileInputStream(file);
         if (in.available() > 0) {
-            FileOutputStream out = new FileOutputStream(new File(file.getPath().substring(0,file.getPath().indexOf('.'))+".lzw"));
+            File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+".lzw");
+            output.createNewFile();
+            FileWriter out = new FileWriter(output);
             byte value;
             int result;
             pointer = root[(byte) in.read()];
@@ -63,11 +66,11 @@ public class Encoder{
                 result = pointer.query(value);
                 if (result != -1){
                     System.out.println("Symbol : " + value + "\tOutput : " + result);
-                    out.write(result);
+                    out.write(result+",");
                 }
             }
             System.out.println("Symbol : " + pointer.key + "\tOutput : " + pointer.rank);
-            out.write(pointer.rank);
+            out.write(pointer.rank+"");
             out.close();
         }
         in.close();
