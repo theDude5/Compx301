@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 /**
  * Encoder trie class
  * the root node is an array of 256 nodes
- * indexes 0 and 255 represent byte values -128 and 128 respectively
+ * indexes 0 and 255 represent byte values -128 and 127 respectively
  */
 class Encoder{
     private final Node[] root; // trie root
