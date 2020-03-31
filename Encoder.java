@@ -8,42 +8,46 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
- 
+
+/**
+ * Encoder trie class
+ * the root node is an array of 256 nodes
+ * indexes 0 and 255 represent byte values -128 and 128 respectively
+ */
 class Encoder{
-    private final int DOMAIN = (int) Math.pow(2, 8); // character space
-    private final Node[] ROOT; // trie ROOT
+    private final Node[] root; // trie root
     private Node pointer;
     private int count; // phrase counter
-
+    
     private class Node {
         int rank; // phrase number
-        byte key; // Symbol
+        byte key; // symbol value
         ArrayList<Node> search_space = new ArrayList<Node>(); // child nodes
-        ArrayList<Byte> index = new ArrayList<Byte>(); // index of node indexes
+        ArrayList<Byte> index = new ArrayList<Byte>(); // indexed of nodes 
         
         private Node(int rank, byte key) {
             this.rank = rank;
             this.key = key;
         }
-
+        
         public int query(byte value){
             int temp = index.indexOf(value);
             if (temp != -1) { // continue search
                 pointer = search_space.get(temp);
                 return -1;
             }
-            else { // add new node, index node and go back to ROOT
+            else { // add new node, index node and go back to root
                 search_space.add(new Node(count++ ,value));
                 index.add(value);
-                pointer = ROOT[Math.abs(value)]; // start new phrase beginning with unmatched value
+                pointer = root[value+root.length/2]; // start new phrase beginning with unmatched value
                 return rank;
             }
         }
     }
 
     public Encoder() {
-        ROOT = new Node[DOMAIN];
-        for (count = 0; count < ROOT.length; count++) { ROOT[count] = new Node(count, (byte) count); }
+        root = new Node[256];
+        for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) (count-root.length/2)); }
     }
     
     /**
@@ -59,7 +63,7 @@ class Encoder{
             FileWriter out = new FileWriter(output);
             byte value;
             int result;
-            pointer = ROOT[(byte) in.read()];
+            pointer = root[Math.abs(in.read())];
             while (in.available() > 0) {
                 value = (byte) in.read();
                 result = pointer.query(value);
