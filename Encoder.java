@@ -39,15 +39,15 @@ class Encoder{
             else { // add new node, index node and go back to root
                 search_space.add(new Node(count++ ,value));
                 index.add(value);
-                pointer = root[value+root.length/2]; // start new phrase beginning with unmatched value
+                pointer = root[value - Byte.MIN_VALUE]; // start new phrase beginning with unmatched value
                 return rank;
             }
         }
     }
 
     public Encoder() {
-        root = new Node[256];
-        for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) (count-root.length/2)); }
+        root = new Node[Byte.MAX_VALUE - Byte.MIN_VALUE + 1];
+        for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) (count + Byte.MIN_VALUE)); }
     }
     
     /**
@@ -63,7 +63,7 @@ class Encoder{
             FileWriter out = new FileWriter(output);
             byte value;
             int result;
-            pointer = root[Math.abs(in.read())];
+            pointer = root[in.read()-Byte.MIN_VALUE];
             while (in.available() > 0) {
                 value = (byte) in.read();
                 result = pointer.query(value);
