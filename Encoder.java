@@ -58,7 +58,7 @@ class Encoder{
     public void encode(File file) throws IOException {
         FileInputStream in = new FileInputStream(file);
         if (in.available() > 0) {
-            File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+".csv");
+            File output = new File(file.getPath().substring(0,file.getPath().indexOf('.')) + ".csv");
             output.createNewFile();
             FileWriter out = new FileWriter(output);
             byte value;
@@ -69,7 +69,7 @@ class Encoder{
                 result = pointer.query(value);
                 if (result != -1){
                     System.out.println("Symbol : " + value + "\tOutput : " + result);
-                    out.write(result+",");
+                    out.write(result + ",");
                 }
             }
             System.out.println("Symbol : " + pointer.key + "\tOutput : " + pointer.rank);
