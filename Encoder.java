@@ -5,12 +5,13 @@
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.DataInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
 /**
- * Encoder trie class
+ * Encoder class
  * the root node is an array of 256 nodes
  * indexes 0 and 255 represent byte values -128 and 127 respectively
  */
@@ -21,25 +22,25 @@ class Encoder{
     
     private class Node {
         int rank; // phrase number
-        byte key; // symbol value
+        // byte key; // symbol value
         ArrayList<Node> search_space = new ArrayList<Node>(); // child nodes
         ArrayList<Byte> index = new ArrayList<Byte>(); // indexed of nodes 
         
         private Node(int rank, byte key) {
             this.rank = rank;
-            this.key = key;
+            // this.key = key; // used for testing
         }
         
-        public int query(byte value){
-            int temp = index.indexOf(value);
+        public int query(byte key){
+            int temp = index.indexOf(key);
             if (temp != -1) { // continue search
                 pointer = search_space.get(temp);
                 return -1;
             }
             else { // add new node, index node and go back to root
-                search_space.add(new Node(count++ ,value));
-                index.add(value);
-                pointer = root[value - Byte.MIN_VALUE]; // start new phrase beginning with unmatched value
+                search_space.add(new Node(count++ ,key));
+                index.add(key);
+                pointer = root[key - Byte.MIN_VALUE]; // start new phrase beginning with unmatched value
                 return rank;
             }
         }
@@ -56,31 +57,31 @@ class Encoder{
      * @throws IOException
      */
     public void encode(File file) throws IOException {
-        FileInputStream in = new FileInputStream(file);
+        DataInputStream in = new DataInputStream(new FileInputStream(file));
         if (in.available() > 0) {
-            File output = new File(file.getPath().substring(0,file.getPath().indexOf('.')) + ".csv");
+            File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_lzw.txt");
             output.createNewFile();
             FileWriter out = new FileWriter(output);
-            byte value;
+            byte key;
             int result;
-            pointer = root[in.read()-Byte.MIN_VALUE];
-            while (in.available() > 0) {
-                value = (byte) in.read();
-                result = pointer.query(value);
+            pointer = root[in.readByte() - Byte.MIN_VALUE];
+            while (in.available() > 0) {;
+                key = in.readByte();
+                result = pointer.query(key);
                 if (result != -1){
-                    System.out.println("Symbol : " + value + "\tOutput : " + result);
-                    out.write(result + ",");
+                    // System.out.println("Input : " + value + "\tOutput : " + result);
+                    out.write(result);
                 }
             }
-            System.out.println("Symbol : " + pointer.key + "\tOutput : " + pointer.rank);
-            out.write(pointer.rank+"");
+            // System.out.println("EOF Input : " + pointer.key + "\tEOF Output : " + pointer.rank);
+            out.write(pointer.rank);
             out.close();
         }
         in.close();
     }
 
     /**
-     * Test Implementation
+     * LZW Encoder Implementation
      * @param args
      * @throws FileNotFoundException
      * @throws IOException
@@ -88,7 +89,8 @@ class Encoder{
     public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
             System.out.println("Usage: java <filepath>");
-            args = new String[]{"tests/MobyDick.txt"};
+            return;
+            // args = new String[]{"tests/MobyDick.txt"};
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
