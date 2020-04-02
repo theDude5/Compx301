@@ -86,8 +86,7 @@ class Encoder{
     public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
             System.out.println("Usage: java <filepath>");
-            //return;
-            args = new String[]{"tests/MobyDick.txt"};
+            return;
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
