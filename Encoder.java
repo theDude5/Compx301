@@ -5,8 +5,9 @@
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.DataInputStream;
-import java.io.FileWriter;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
@@ -61,20 +62,16 @@ class Encoder{
         if (in.available() > 0) {
             File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_lzw.txt");
             output.createNewFile();
-            FileWriter out = new FileWriter(output);
+            DataOutputStream out = new DataOutputStream(new FileOutputStream(output));
             byte key;
             int result;
             pointer = root[in.readByte() - Byte.MIN_VALUE];
             while (in.available() > 0) {;
                 key = in.readByte();
                 result = pointer.query(key);
-                if (result != -1){
-                    // System.out.println("Input : " + value + "\tOutput : " + result);
-                    out.write(result);
-                }
+                if (result != -1){ out.writeInt(result); }
             }
-            // System.out.println("EOF Input : " + pointer.key + "\tEOF Output : " + pointer.rank);
-            out.write(pointer.rank);
+            out.writeInt(pointer.rank);
             out.close();
         }
         in.close();
@@ -89,8 +86,8 @@ class Encoder{
     public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
             System.out.println("Usage: java <filepath>");
-            return;
-            // args = new String[]{"tests/MobyDick.txt"};
+            //return;
+            args = new String[]{"tests/MobyDick.txt"};
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
