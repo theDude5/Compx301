@@ -24,11 +24,13 @@ class Encoder{
     private class Node {
         int rank; // phrase number
         // byte key; // symbol value
-        ArrayList<Node> search_space = new ArrayList<Node>(); // child nodes
-        ArrayList<Byte> index = new ArrayList<Byte>(); // indexed of nodes 
+        ArrayList<Node> search_space; //child nodes
+        ArrayList<Byte> index; //indexed of nodes 
         
         private Node(int rank, byte key) {
             this.rank = rank;
+            search_space = new ArrayList<Node>();
+            index = new ArrayList<Byte>();
             // this.key = key; // used for testing
         }
         
@@ -48,45 +50,43 @@ class Encoder{
     }
 
     public Encoder() {
-        root = new Node[Byte.MAX_VALUE - Byte.MIN_VALUE + 1];
+        root = new Node[256];
         for (count = 0; count < root.length; count++) { root[count] = new Node(count, (byte) (count + Byte.MIN_VALUE)); }
     }
     
-    /**
-     * Implements LZW algorithm
-     * @param file File to encode
-     * @throws IOException
-     */
     public void encode(File file) throws IOException {
         DataInputStream in = new DataInputStream(new FileInputStream(file));
         if (in.available() > 0) {
             File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_lzw.txt");
             output.createNewFile();
             DataOutputStream out = new DataOutputStream(new FileOutputStream(output));
+
             byte key;
             int result;
             pointer = root[in.readByte() - Byte.MIN_VALUE];
             while (in.available() > 0) {;
                 key = in.readByte();
                 result = pointer.query(key);
-                if (result != -1){ out.writeInt(result); }
+                if (result != -1){
+                    out.writeInt(result);
+                }
             }
             out.writeInt(pointer.rank);
             out.close();
+            System.out.println(count);
         }
         in.close();
     }
 
-    /**
-     * LZW Encoder Implementation
-     * @param args
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
+    public void compress(){
+        
+    }
+    
     public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
             System.out.println("Usage: java <filepath>");
-            return;
+            //return;
+            args = new String[]{"tests/MobyDick.txt"};
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
