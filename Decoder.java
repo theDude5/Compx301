@@ -14,11 +14,11 @@ class Decoder{
         Stack<Byte> phrase;
         public Node(int pointer) {
             phrase = new Stack<Byte>();
-            //if (count < 256) { phrase.push((byte) (count + Byte.MIN_VALUE)); }
-            //else {
+            if (count < 256) { phrase.push((byte) (count + Byte.MIN_VALUE)); }
+            else {
                 phrase.addAll(nodes[pointer].phrase);
                 if (count > 256) { nodes[count-1].phrase.add(0,phrase.peek()); }
-            //}
+            }
         }
     }
 
