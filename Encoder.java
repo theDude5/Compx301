@@ -77,10 +77,6 @@ class Encoder{
         }
         in.close();
     }
-
-    public void compress(){
-        
-    }
     
     public static void main(String[] args) throws FileNotFoundException, IOException { 
         if (args.length == 0){ 
