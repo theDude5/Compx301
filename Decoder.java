@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.File;
 import java.util.Stack;
 
-class Decoder{
+class Decoder {
     Node[] nodes;
     int count;
     File file;
@@ -15,10 +15,10 @@ class Decoder{
         public Node(int pointer) {
             phrase = new Stack<Byte>();
             if (count < 256) { phrase.push((byte) (count + Byte.MIN_VALUE)); }
-            else {
+            else { 
                 phrase.addAll(nodes[pointer].phrase);
                 if (count > 256) { nodes[count-1].phrase.add(0,phrase.peek()); }
-            }
+            }         
         }
     }
 
@@ -32,12 +32,13 @@ class Decoder{
         DataInputStream in = new DataInputStream(new FileInputStream(file));
         File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_.txt");
         DataOutputStream out = new DataOutputStream(new FileOutputStream(output));
-        output.createNewFile();      
+        output.createNewFile();
         while (in.available() > 0){ 
             nodes[count] = new Node(in.readInt());
             count++;
         }
-        for (int i = 256; i < nodes.length; i++) { while (!nodes[i].phrase.empty()) { out.write(nodes[i].phrase.pop()); } }
+        for (int i = 256; i < nodes.length-2; i++) { while (nodes[i].phrase.size() > 1) { out.write(nodes[i].phrase.pop()); } }
+        while (!nodes[nodes.length-1].phrase.isEmpty()) { out.write(nodes[nodes.length-1].phrase.pop()); }
         in.close();
         out.close();
     }
@@ -45,7 +46,8 @@ class Decoder{
     public static void main(String[] args) throws IOException{
         if (args.length == 0){ 
             System.out.println("Usage: java Decoder <filepath>");
-            args = new String[]{"tests/test1_lzw.txt"};
+            args = new String[]{"tests/BrownCorpus_lzw.txt"};
+            // return;
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
