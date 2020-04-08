@@ -1,6 +1,6 @@
 /**
  * Implements the LZW data compression algorithm
- * @author : Stuart Ussher (1060184)
+ * @authors : Stuart Ussher (1060184)
  *          : Ryan Good (1353453)
  */
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ class LZWencode{
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
         else {
-            Encoder encoder = new Encoder();
+            LZWencode encoder = new LZWencode();
             encoder.encode(file);
         }
     }

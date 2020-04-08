@@ -57,7 +57,7 @@ class LZWdecode {
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
         else {
-            Decoder decoder = new Decoder(file);
+            LZWdecode decoder = new LZWdecode(file);
             decoder.decode();
        }
     }
