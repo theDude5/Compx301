@@ -1,6 +1,6 @@
 /**
  * Implements the LZW data compression algorithm
- * @authors : Stuart Ussher (1060184)
+ * @author : Stuart Ussher (1060184)
  *          : Ryan Good (1353453)
  */
 import java.util.ArrayList;
