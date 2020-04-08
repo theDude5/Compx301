@@ -65,19 +65,12 @@ class LZWencode{
                 result = pointer.query(in.readByte());
                 if (result != -1){
                     out.writeInt(result);
-                    bitpack(result);
                 }
             }
             out.writeInt(pointer.rank);
             out.close();
         }
         in.close();
-    }
-
-    private void bitpack(int phraseNum) {
-        System.out.println(phraseNum);
-        byte p = (byte)phraseNum;
-        return;
     }
 
     /**
@@ -92,7 +85,7 @@ class LZWencode{
             //return;
             args = new String[]{"tests/BrownCorpus.txt"};
         }
-        File file = new File("text.txt");
+        File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
         else {
             Encoder encoder = new Encoder();
