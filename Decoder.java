@@ -1,3 +1,7 @@
+ /**
+  * Implements the LZW data Decompression algorithm
+  * @author : Stuart Ussher (1060184)
+  */
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -30,14 +34,14 @@ class Decoder {
     
     public void decode() throws IOException{
         DataInputStream in = new DataInputStream(new FileInputStream(file));
-        File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_.txt");
+        File output = new File(file.getPath().substring(0,file.getPath().indexOf('.'))+"_lzw.txt");
         DataOutputStream out = new DataOutputStream(new FileOutputStream(output));
         output.createNewFile();
         while (in.available() > 0){ 
             nodes[count] = new Node(in.readInt());
             count++;
         }
-        for (int i = 256; i < nodes.length-2; i++) { while (nodes[i].phrase.size() > 1) { out.write(nodes[i].phrase.pop()); } }
+        for (int i = 256; i < nodes.length-1; i++) { while (nodes[i].phrase.size() > 1) { out.write(nodes[i].phrase.pop()); } }
         while (!nodes[nodes.length-1].phrase.isEmpty()) { out.write(nodes[nodes.length-1].phrase.pop()); }
         in.close();
         out.close();
@@ -46,8 +50,8 @@ class Decoder {
     public static void main(String[] args) throws IOException{
         if (args.length == 0){ 
             System.out.println("Usage: java Decoder <filepath>");
-            args = new String[]{"tests/BrownCorpus_lzw.txt"};
-            // return;
+            //return;
+            args = new String[]{"tests/BrownCorpus.lzw"};
         }
         File file = new File(args[0]);
         if (!file.exists() || file.length() == 0) { System.out.println("File is empty or does not exist"); }
