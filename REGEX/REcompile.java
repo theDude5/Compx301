@@ -50,7 +50,7 @@ public class REcompile {
     }
 
     public void parse() {
-        i = 1;
+        i = 0;
         expression();
         if (i != regex.length){ throw new Error("Illegal Expression"); }
         System.out.println(regex);
