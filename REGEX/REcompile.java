@@ -1,17 +1,18 @@
 public class REcompile {
     private class State {
-        int n1, n2;
+        int n1, n2, st;
         char ch;
         public State(char ch, int n2) {
             this.ch = ch;
             this.n2 = n2;
             n1 = n2;
+            this.st = state++;
         }
     }
 
     char[] regex;
     State[] states;
-    int i, s;
+    int i, s, state = 0;
     public REcompile(String regex){
         this.regex = (regex.substring(1, regex.length()-1)).toCharArray();
         states= new State[this.regex.length];
@@ -25,44 +26,48 @@ public class REcompile {
 
     public void term() {
         int r = factor();
-        if (regex[i] == '*') {
-            states[s].n1 = ++i; 
-            states[s].n2 = r;
-        }
+        if (i >= regex.length) { return; }
+        if (regex[i] == '*') { states[state-1].n2 = r; i++; }
         else if (regex[i] == '?') {
-            states[s].n1++;
-            states[r].n2 = ++i;
+            if (states[state-1].ch != '\0'){r--;}
+            states[r].n2 = state;
+            i++; 
         }
-        else if (regex[i] == '|') { 
-            int temp = i++;
+        else if (regex[i] == '|') {
+            if (states[state-1].ch != '\0') { states[state] = new State('\0', state+1); }
+            states[state-1].n2 = r;
+            if (states[r-1].n1 == states[r-1].n2){ states[r-1].n2 = state-1;}
+            states[r-1].n1 = state-1;
+            i++;
             term();
+            if (states[r].n1 == states[r].n2){ states[r].n2 = state; }
+            states[r].n1 = state;
         }
     }
 
+    /**
+     * @return first index of last expression
+     */
     public int factor(){
         if ("*?|".contains(regex[i]+"")) { throw new Error("Misplaced operator"); }
         switch (regex[i]) {
             case '\\':
-                if (states[s].n1 == states[s].n2) { states[s].n2++; }
-                states[s].n1++; 
-                s = ++i;
-                states[i] = new State(regex[i], ++i);
+                states[state] = new State(regex[i+1], state+1);
+                i+=2;
                 break;
-            case '(':
-                if (states[s].n1 == states[s].n2) { states[s].n2++; }
-                states[s].n1 = i+1;
-                int r = ++i;
+            case '(':    
+                states[state] = new State('\0', state+1);
+                int r = state-1; i++;
                 expression();
                 if (i >= regex.length || regex[i] != ')') { throw new Error("Missing ')'"); }      
-                if (states[s].n1 == states[s].n2) { states[s].n2++; }
-                states[s].n1 = ++i;
-                while (states[r] == null && r < i) { r++; }
+                states[state] = new State('\0', state+1);
+                i++;
                 return r;
             case ')': break;
-            case '.': s = i; states[i] = new State('.', ++i); break;
-            default: s = i; states[i] = new State(regex[i], ++i);
+            // case '.': s = i; states[state] = new State('.', state+1); i++; break;
+            default: s = i; states[state] = new State(regex[i], state+1); i++;
         }
-        return i-1;
+        return state-1;
     }
 
     public void parse() {
@@ -72,18 +77,15 @@ public class REcompile {
         print();
     }
     public void print() {
-        System.out.println("ch\tn1\tn2");
-        System.out.println("------------------");
-        for (State c: states) { if (c != null) { System.out.println(c.ch+"\t"+c.n1+"\t"+c.n2); }}
+        System.out.println("state\tch\tn1\tn2\n---------------------------");
+        for (State c: states) { if (c != null) { System.out.println(c.st+"\t"+c.ch+"\t"+c.n1+"\t"+c.n2); }}
     }
     public static void main(String[] args) {
         if (args.length == 0 || !args[0].startsWith("\"") || !args[0].endsWith("\"")) { 
             System.out.println("Usage: java REcompile \\\" <expression> \\\"");
-            args = new String[] {"\""+".a*(()a)*\\?.|a*"+"\""};
+            args = new String[] {"\""+".(a|c|(b?)|C*)?"+"\""};
             // return;
         }
-        try { 
-            REcompile RE = new REcompile(args[0]);
-        } catch (Error e) { System.err.println(e); }
+        try { REcompile RE = new REcompile(args[0]); } catch (Error e) { System.err.println(e); }
     }
 }
