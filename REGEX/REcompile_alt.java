@@ -28,13 +28,14 @@ public class REcompile {
     public void term(){
         int r = factor();
         if (i >= regex.length || !"*?|".contains(regex[i]+"")) { return; }
-        
         if (states[state-1].ch != '\0') { states[state] = new State('\0', state+1); }
-        states[state-1].n2 = r;
-        
+        if (r+1 < state-1 && states[r+1].ch=='\0') {
+            states[state-1].n2 = r+1;
+            if (states[r+1].n1 == state-1) { states[r+1].n1 = states[r+1].st+1; }
+        }
+        else{ states[state-1].n2 = r;}
         if (states[r-1].n2 == states[r-1].n1) { states[r-1].n2 = state-1; }
         if (states[r-1].ch == '\0') { states[r-1].n1 = state-1; }
-         
         if (regex[i] == '*') {
             states[s].n1 = state;
             states[s].n2 = r < s && states[r+1].ch == '\0' ? r+1 : r;
@@ -97,7 +98,7 @@ public class REcompile {
     public static void main(String[] args) {
         if (args.length == 0 || !args[0].startsWith("\"") || !args[0].endsWith("\"")) { 
             System.out.println("Usage: java REcompile \\\" <expression> \\\"");
-            args = new String[] {"\""+"(\\?(a*)|(a?b)|((ab)?)|c)?n"+"\""};
+            args = new String[] {"\""+"am*b"+"\""};
             // return;
         }
         REcompile RE = new REcompile(args[0]);
