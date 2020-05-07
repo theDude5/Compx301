@@ -126,6 +126,9 @@ public class REsearch {
             if(condition == 1) {
                 System.out.println("No Matches could be found");
             }
+            if(condition == 2) {
+                System.out.println("A Match has been found");
+            }
         }
         catch(Exception e) {
             e.printStackTrace();
