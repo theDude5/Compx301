@@ -107,7 +107,7 @@ public class REsearch {
                         deque.addLast(currentState.getN2());
                     }
                     p++;
-                    while(p == r++) {       //Moves the pointer along to check the next char if it is the same, and so on until whole pattern is found
+                    while(p == r) {       //Moves the pointer along to check the next char if it is the same, and so on until whole pattern is found
                         System.out.println((char)r);
                         p++;
                         r++;
