@@ -4,11 +4,10 @@ import java.io.*;
 
 //Given the output of the compiler as standard input and a file, find and output any matching patterns
 public class REsearch {
-    List<State> states = new ArrayList<State>();     //Global array to store all the states
-    //Deque has addFirst(e), removeFirst(), and addLast(e) eg. "deque.addLast(e)"
-    Deque<Integer> deque = new ArrayDeque<Integer>();    //Deque to facilitate checking of current and next states
+    List<State> states;    //Global array to store all the states
+    Deque<Integer> deque;    //Deque to facilitate checking of current and next states
 
-    class State {
+    private class State {
         int stateNum;
         int c;
         int n1;
@@ -20,28 +19,12 @@ public class REsearch {
             this.n1 = _n1;
             this.n2 = _n2;
         }
-
-        public int getStateNum() {
-            return stateNum;
-        }
-
-        public int getC() {
-            return c;
-        }
-
-        public int getN1() {
-            return n1;
-        }
-
-        public int getN2() {
-            return n2;
-        }
     }
 
     public State getState(int stateNum) {
             State s = new State(0, 0, 0, 0);
             for (int i = 0; i < states.size(); i++) {
-                if (states.get(i).getStateNum() == stateNum) {
+                if (states.get(i).stateNum == stateNum) {
                     s = states.get(i);
                 }
             }
@@ -53,15 +36,16 @@ public class REsearch {
         String line;
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
-            line = br.readLine();
-            String[] splitString = line.split("\t");     //Split the input by Tab Char to get out the state, c, n1, n2
-            state = Integer.parseInt(splitString[0]);
-            c = Integer.parseInt(splitString[1]);
-            n1 = Integer.parseInt(splitString[2]);
-            n2 = Integer.parseInt(splitString[3]);
-            State s = new State(state, c, n1 , n2);
-            states.add(s);      //Add the new state to the array of states
-            deque.addFirst(s.getStateNum());
+            while((line = br.readLine()) != null) {
+                String[] splitString = line.split("\t");     //Split the input by Tab Char to get out the state, c, n1, n2
+                state = Integer.parseInt(splitString[0]);
+                c = Integer.parseInt(splitString[1]);
+                n1 = Integer.parseInt(splitString[2]);
+                n2 = Integer.parseInt(splitString[3]);
+                State s = new State(state, c, n1 , n2);
+                states.add(s);      //Add the new state to the array of states
+                deque.addFirst(s.stateNum);
+            }
         }
         catch (IOException e) {
             System.out.println(e);
@@ -69,10 +53,11 @@ public class REsearch {
     }
 
     public REsearch(String inputFile) {
-        int condition = 0;
-        //Scan has stateNum of -1, to indicate that it is the state
-        State scan = new State(-1,0, 0, 0);
-        deque.addFirst(scan.getStateNum());
+        states = new ArrayList<State>();
+        deque = new ArrayDeque<Integer>();
+        int condition = 0;      //Indicates the reason the program has ended
+        State scan = new State(-1,0, 0, 0);     //Scan has stateNum of -1, to indicate that it is the state
+        deque.addFirst(scan.stateNum);
         getStandardInput();
 
         try {
@@ -88,23 +73,23 @@ public class REsearch {
                 deque.removeFirst(); //Pops the state at the top of the deque off
                 State currentState = getState(currentStateNum);
 
-                if(currentState.getC() == -1) {
+                if(currentState.c == -1) {
                     if(deque.size() > 0) {      //If you popped scan but there are still more states, put it on the botton of deque
                         State newScan = new State(-1,0, 0, 0);
-                        deque.addLast(newScan.getStateNum());
+                        deque.addLast(newScan.stateNum);
                     }
                     else {      //Otherwise, scan was popped because deque is empty so match has failed
                         condition = 1;
                         break;
                     }
                 }
-                else if(currentState.getC() == r) {     //If the char is a match to our text
-                    if(currentState.getN1() == currentState.getN2()) {        //If n1 is == to n2, only add one of them
-                        deque.addLast(currentState.getN1());
+                else if(currentState.c == r) {     //If the char is a match to our text
+                    if(currentState.n1 == currentState.n2) {        //If n1 is == to n2, only add one of them
+                        deque.addLast(currentState.n1);
                     }
                     else {
-                        deque.addLast(currentState.getN1());
-                        deque.addLast(currentState.getN2());
+                        deque.addLast(currentState.n1);
+                        deque.addLast(currentState.n2);
                     }
                     p++;
                     while(p == r) {       //Moves the pointer along to check the next char if it is the same, and so on until whole pattern is found
@@ -114,11 +99,10 @@ public class REsearch {
                         condition = 2;
                     }
                 }
-                else if(currentState.getC() == '\0') {      //If the char is a Branching State
-                    deque.addFirst(currentState.getN1());
-                    deque.addFirst(currentState.getN2());
+                else if(currentState.c == '\0') {      //If the char is a Branching State
+                    deque.addFirst(currentState.n1);
+                    deque.addFirst(currentState.n2);
                 }
-                //System.out.print((char)r);
             }
             fis.close();
             if(condition == 0) {
