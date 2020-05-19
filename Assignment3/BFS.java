@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Stack;
 
 public class BFS {
     Queue<String> frontier;
@@ -16,20 +18,13 @@ public class BFS {
                     go = false;
                 }
                 else {
-                    String child0 = s + "+4";
-                    frontier.add(child0);
-                    String child1 = s + "-4";
-                    frontier.add(child1);
-                    String child2 = s + "*4";
-                    frontier.add(child2);
-                    String child3 = s + "/4";
-                    frontier.add(child3);
-                    String child4 = s + "4";
-                    frontier.add(child4);
-                    String child5 = s + ".4";
-                    frontier.add(child5);
-                    String child6 = s + "(" + s + ")";
-                    frontier.add(child6);
+                    frontier.add(s + "+4");
+                    frontier.add(s + "-4");
+                    frontier.add(s + "*4");
+                    frontier.add(s + "/4");
+                    frontier.add(s + "4");
+                    frontier.add(s + ".4");
+                    frontier.add(s + "(" + s + ")");
                 }
             }
             catch (Exception e) {
