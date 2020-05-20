@@ -8,14 +8,14 @@ public class AStar {
         char val;
         int x, y, h, c=0;
         Site prev;
-        boolean visited;
         public Site(char val, int x, int y){
             this.val = val;
             this.x = x; this.y = y;
             if (val == 'G'){ goal = this; }
             else if (val == 'S') { start = this; frontier.add(this); }
         }
-        public void calc_distance() { h = !"X+-|".contains(val+"")? (int) Math.pow(x-goal.x, 2)+ (int) Math.pow(y-goal.y, 2) : -1; }
+        public void calc_distance() { h = !"X+-|".contains(val+"")? (int) Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
+        public int getf(){ return h+c; }
     }
 
     Site[][] map;
@@ -25,9 +25,7 @@ public class AStar {
         frontier = new ArrayList<Site>();
         this.map = new Site[_map.size()][_map.get(0).length()];
         for (int i = 0; i < this.map.length; i++) {
-            for (int j = 0; j < this.map[i].length; j++) { 
-                this.map[i][j] = new Site(_map.get(i).charAt(j), i, j); 
-            }
+            for (int j = 0; j < this.map[i].length; j++) { this.map[i][j] = new Site(_map.get(i).charAt(j), i, j); }
         }
         printMap();
         for (Site[] row : map) {
@@ -39,24 +37,25 @@ public class AStar {
         }
         expand();
         while (pos != goal) { expand(); }
+        while (pos.prev != start) { pos = pos.prev; pos.val = '.'; }
+        printMap();
     }
 
     public void expand() {
-        Site temp;
         pos = frontier.get(0);
-        for (Site site : frontier) { if (site.h < pos.h) { pos = site; } }
+        Site temp;
+        for (Site site : frontier) { if (site.getf() < pos.getf()) { pos = site; } }
         if (pos == goal) { return; }
-        for (int[] coord : new int[][] { {1,0}, {-1,0}, {0,1}, {0,-1}, {-1,-1}, {1,1}, {1,-1},{-1,1}}) {
+        for (int[] coord : new int[][] {{1,0},{0,1},{-1,0},{0,-1}}) {
             temp = map[pos.x + coord[0]][pos.y + coord[1]];
-            if (!temp.visited && temp.h > -1) {
-                frontier.add(temp);
-                temp.visited= true;
-                if (temp != start && temp != goal) { temp.val = '.'; }
+            if (temp.h < 0) { continue;}
+            else if (temp.prev == null) {
+                temp.prev = pos; temp.c = pos.c+1; 
+                frontier.add(temp); 
             }
+            else if (pos.c+1 < temp.c) { temp.prev = pos; temp.c = pos.c+1; }
         }
-        //if(pos != start && pos != goal) { pos.val = '\0'; }
         frontier.remove(pos);
-        //printMap();
     }
 
     public void printMap() {
@@ -70,7 +69,7 @@ public class AStar {
     public static void main(String[] args) throws FileNotFoundException{
         if (args.length == 0){
             System.out.println("Usage: java AStar <filepath>");
-            args = new String[]{"map2.txt"};
+            args = new String[]{"map3.txt"};
             //return;
         }
         Scanner scanner = new Scanner(new File((args[0])));
@@ -78,6 +77,6 @@ public class AStar {
         while (scanner.hasNext()) { map.add(scanner.nextLine()); }
         scanner.close();
         AStar aStar = new AStar(map);
-        aStar.printMap();
+        //aStar.printMap();
     }
 }
