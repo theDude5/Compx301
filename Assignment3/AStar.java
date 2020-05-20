@@ -6,7 +6,8 @@ import java.util.Scanner;
 public class AStar {
     private class Site{
         char val;
-        int x, y, h, c=0;
+        int x, y;
+        double h,c;
         Site prev;
         public Site(char val, int x, int y){
             this.val = val;
@@ -14,8 +15,10 @@ public class AStar {
             if (val == 'G'){ goal = this; }
             else if (val == 'S') { start = this; frontier.add(this); }
         }
-        public void calc_distance() { h = !"X+-|".contains(val+"")? (int) Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
-        public int getf(){ return h+c; }
+        //public void calc_distance() { h = !"X+-|".contains(val+"")? (int) Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
+        //public int getf(){ return h+c; }
+        public void calc_distance() { h = !"X+-|".contains(val+"")? Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
+        public double getf(){ return h+c; }
     }
 
     Site[][] map;
@@ -46,14 +49,17 @@ public class AStar {
         Site temp;
         for (Site site : frontier) { if (site.getf() < pos.getf()) { pos = site; } }
         if (pos == goal) { return; }
+        double t;
+        //for (int[] coord : new int[][] {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}}) {
         for (int[] coord : new int[][] {{1,0},{0,1},{-1,0},{0,-1}}) {
             temp = map[pos.x + coord[0]][pos.y + coord[1]];
-            if (temp.h < 0) { continue;}
+            t = coord[0]==0 || coord[1] == 0? 1: Math.sqrt(Math.abs(coord[0])+Math.abs(coord[1]));
+            if (temp.h < 0) { continue; }
             else if (temp.prev == null) {
-                temp.prev = pos; temp.c = pos.c+1; 
+                temp.prev = pos; temp.c = pos.c+t; 
                 frontier.add(temp); 
             }
-            else if (pos.c+1 < temp.c) { temp.prev = pos; temp.c = pos.c+1; }
+            else if (pos.c+t < temp.c) { temp.prev = pos; temp.c = pos.c+t; }
         }
         frontier.remove(pos);
     }
@@ -69,7 +75,7 @@ public class AStar {
     public static void main(String[] args) throws FileNotFoundException{
         if (args.length == 0){
             System.out.println("Usage: java AStar <filepath>");
-            args = new String[]{"map3.txt"};
+            args = new String[]{"map1.txt"};
             //return;
         }
         Scanner scanner = new Scanner(new File((args[0])));
@@ -77,6 +83,5 @@ public class AStar {
         while (scanner.hasNext()) { map.add(scanner.nextLine()); }
         scanner.close();
         AStar aStar = new AStar(map);
-        //aStar.printMap();
     }
 }
