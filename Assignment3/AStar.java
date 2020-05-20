@@ -23,7 +23,7 @@ public class AStar {
 
     Site[][] map;
     Site goal, start, pos;
-    ArrayList<Site> frontier, path;
+    ArrayList<Site> frontier;
     public AStar(ArrayList<String> _map) {
         frontier = new ArrayList<Site>();
         this.map = new Site[_map.size()][_map.get(0).length()];
