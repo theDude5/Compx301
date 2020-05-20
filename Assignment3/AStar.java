@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AStar {
+    private final int[][] Valid = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
+    //private final int[][] Valid = {{1,0},{0,1},{-1,0},{0,-1}};
+    
     private class Site{
         char val;
-        int x, y;
+        int x,y;
         double h,c;
         Site prev;
         public Site(char val, int x, int y){
@@ -15,10 +18,7 @@ public class AStar {
             if (val == 'G'){ goal = this; }
             else if (val == 'S') { start = this; frontier.add(this); }
         }
-        //public void calc_distance() { h = !"X+-|".contains(val+"")? (int) Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
-        //public int getf(){ return h+c; }
-        public void calc_distance() { h = !"X+-|".contains(val+"")? Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2) ) : -1; }
-        public double getf(){ return h+c; }
+        public void calc_distance() { h = !"X+-|".contains(val+"")? Math.sqrt(Math.pow(x-goal.x, 2) + Math.pow(y-goal.y, 2)) : -1; }
     }
 
     Site[][] map;
@@ -31,13 +31,7 @@ public class AStar {
             for (int j = 0; j < this.map[i].length; j++) { this.map[i][j] = new Site(_map.get(i).charAt(j), i, j); }
         }
         printMap();
-        for (Site[] row : map) {
-            for (Site cell : row) { 
-                cell.calc_distance(); 
-                //System.out.printf("%3d",cell.h);
-            }
-            //System.out.println();
-        }
+        for (Site[] row : map) { for (Site cell : row) { cell.calc_distance(); } }
         expand();
         while (pos != goal) { expand(); }
         while (pos.prev != start) { pos = pos.prev; pos.val = '.'; }
@@ -46,20 +40,19 @@ public class AStar {
 
     public void expand() {
         pos = frontier.get(0);
-        Site temp;
-        for (Site site : frontier) { if (site.getf() < pos.getf()) { pos = site; } }
+        for (Site site : frontier) { if (site.h + site.c < pos.h + pos.c) { pos = site; }}
         if (pos == goal) { return; }
-        double t;
-        //for (int[] coord : new int[][] {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}}) {
-        for (int[] coord : new int[][] {{1,0},{0,1},{-1,0},{0,-1}}) {
+        Site temp;
+        double cost;
+        for (int[] coord : Valid) {
             temp = map[pos.x + coord[0]][pos.y + coord[1]];
-            t = coord[0]==0 || coord[1] == 0? 1: Math.sqrt(Math.abs(coord[0])+Math.abs(coord[1]));
-            if (temp.h < 0) { continue; }
-            else if (temp.prev == null) {
-                temp.prev = pos; temp.c = pos.c+t; 
-                frontier.add(temp); 
+            if(temp.h < 0){ continue; }
+            cost = coord[0] == 0 || coord[1] == 0? 1 : Math.sqrt(2);
+            if (temp.prev == null) {
+                temp.prev = pos; temp.c = pos.c+cost;
+                frontier.add(temp);
             }
-            else if (pos.c+t < temp.c) { temp.prev = pos; temp.c = pos.c+t; }
+            else if (pos.c+cost < temp.c) { temp.prev = pos; temp.c = pos.c+cost; }
         }
         frontier.remove(pos);
     }
@@ -69,10 +62,10 @@ public class AStar {
             for (Site cell : row) { System.out.print(cell.val); }
             System.out.println();
         }
-        System.out.printf("Start: (%d,%d)\t Goal: (%d,%d)\n", start.x, start.y, goal.x, goal.y);
+        //System.out.printf("Start: (%d,%d)\t Goal: (%d,%d)\n", start.x, start.y, goal.x, goal.y);
     }
     
-    public static void main(String[] args) throws FileNotFoundException{
+    public static void main(String[] args) throws FileNotFoundException {
         if (args.length == 0){
             System.out.println("Usage: java AStar <filepath>");
             args = new String[]{"map1.txt"};
