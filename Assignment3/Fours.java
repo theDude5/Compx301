@@ -8,13 +8,13 @@ public class Fours {
     public Fours(Double input) {
         frontier = new LinkedList<String>();
         String firstState = "4";
-        String finalString = "";
+        String outputString = "";
         frontier.add(firstState);
         double d = 0;
         while(d != input) {
             try {
                 String s = frontier.remove();
-                finalString = s;
+                outputString = s;
                 d = EvaluateString.evaluate(s);
                 expand(s);
             }
@@ -24,7 +24,7 @@ public class Fours {
                 System.out.println("Could not evaluate to " + input);
             }
         }
-        System.out.println(finalString + " is equivalent to the input of " + input);
+        System.out.println(outputString + " is equivalent to the input of " + input);
     }
 
     public void expand(String s) {
