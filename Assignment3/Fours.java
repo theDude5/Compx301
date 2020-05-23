@@ -19,20 +19,22 @@ public class Fours {
                 expand(s);
             }
             catch (Exception e) {
-                System.out.println(e);
+            }
+            catch (StackOverflowError t) {
+                System.out.println("Could not evaluate to " + input);
             }
         }
-        System.out.println(finalString + "=" + d + " is equivalent to the input of " + input);
+        System.out.println(finalString + " is equivalent to the input of " + input);
     }
 
     public void expand(String s) {
-        frontier.add(s + "+4");
-        frontier.add(s + "-4");
-        frontier.add(s + "*4");
-        frontier.add(s + "/4");
+        frontier.add(s + " + 4");
+        frontier.add(s + " - 4");
+        frontier.add(s + " * 4");
+        frontier.add(s + " / 4");
         frontier.add(s + "4");
         frontier.add(s + ".4");
-        frontier.add(s + "(" + s + ")");
+        frontier.add("(" + s + ")");
     }
 
     public static void main(String [] args) {
