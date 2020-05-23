@@ -38,9 +38,19 @@ public class Fours {
     }
 
     public static void main(String [] args) {
-        String input = args[0];
-        Double dInput = Double.parseDouble(input);
-        Fours bfs = new Fours(dInput);
+        try {
+            if (args.length == 0) {
+                System.out.println("Usage: java Fours <number>");
+            }
+            else {
+                String input = args[0];
+                Double dInput = Double.parseDouble(input);
+                Fours bfs = new Fours(dInput);
+            }
+        }
+        catch (Error e) {
+            System.err.println(e);
+        }
     }
 }
 
