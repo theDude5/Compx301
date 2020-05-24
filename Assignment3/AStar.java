@@ -5,8 +5,9 @@ import java.util.Scanner;
 
 import java.awt.*;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class AStar extends Canvas {
+public class AStar extends JPanel {
     private final int[][] Valid = {{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1},{0,-1},{1,-1}};
     //private final int[][] Valid = {{1,0},{0,1},{-1,0},{0,-1}};
     private class Site{
@@ -32,7 +33,7 @@ public class AStar extends Canvas {
         for (int i = 0; i < this.map.length; i++) {
             for (int j = 0; j < this.map[i].length; j++) { this.map[i][j] = new Site(_map.get(i).charAt(j), i, j); }
         }
-        printMap();
+        //printMap();
         for (Site[] row : map) { for (Site cell : row) { cell.calc_distance(); } }
         expand();
         try { while (pos != goal) { expand(); }} 
@@ -70,41 +71,36 @@ public class AStar extends Canvas {
     }
 
     public void paint(Graphics g) {  
-        setForeground(Color.BLACK);
-        setBounds(50,50,map.length*100 ,map[0].length*10);
-        for (Site[] row : map) {
-            for (Site site : row) {
-                if (site.h<0){ 
-                    g.setColor(Color.BLACK);
-                    g.fillRect(5*site.y, 10*site.x, 4,8);
-                }
-            }
-            g.setColor(Color.RED);
-            Site temp = goal;
-            while (temp !=start){
-                g.fillArc(5*temp.y, 10*temp.x, 6,6,0,360);
-                g.drawLine(5*temp.y+3, 10*temp.x+3, 5*temp.prev.y+3, 10*temp.prev.x+3);
-                temp = temp.prev;
-            }
-            g.fillArc(5*temp.y, 10*temp.x, 6,6,0,360);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.scale(10, 10);
+        g2.setColor(Color.BLACK);
+        for (Site[] row : map) { for (Site site : row) { if (site.h < 0) { g2.fillRect(site.y+1, site.x+1, 1,1); } } }
+        g2.setColor(Color.BLUE);
+        g2.fillRect(start.y+1, start.x+1, 1,1);
+        g2.fillRect(goal.y+1, goal.x+1, 1,1);
+        pos = goal.prev;
+        g2.setColor(Color.RED);
+        while (pos != null && pos != start) {
+            g2.fillRect(pos.y+1, pos.x+1, 1,1);
+            pos = pos.prev;
         }
     }
 
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length == 0){
             System.out.println("Usage: java AStar <filepath>");
-            args = new String[]{"map4.txt"};
+            args = new String[]{"map75x75.txt"};
             //return;
         }
         Scanner scanner = new Scanner(new File((args[0])));
         ArrayList<String> map = new ArrayList<String>();
         while (scanner.hasNext()) { map.add(scanner.nextLine()); }
         scanner.close();
-        AStar aStar = new AStar(map);
-        JFrame f=new JFrame();
+        AStar aStar = new AStar(map); 
+        JFrame f = new JFrame();
         f.setDefaultCloseOperation(f.DISPOSE_ON_CLOSE);
-        f.add(aStar);
-        f.setSize(10*aStar.map.length+100,10*aStar.map[0].length+50);
+        f.add(new JPanel().add(aStar));
+        f.setSize(11*map.get(0).length(), 15*map.size());
         f.setVisible(true);
     }
 }
