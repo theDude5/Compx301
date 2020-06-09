@@ -19,10 +19,9 @@ public class Counter {
             //BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
             image = ImageIO.read(new File(fileName));
             int[][] data = new int[image.getWidth()][image.getHeight()];
-            for (int i = 0; i < image.getHeight(); i++) {
-                for (int j = 0; j < image.getWidth(); j++) {
-                    data[i][j] = image.getRGB(i, j);
-                    System.out.println("("+i+","+j+")");
+            for (int y = 0; y < image.getHeight(); y++) {
+                for (int x = 0; x < image.getWidth(); x++) {
+                    data[x][y] = image.getRGB(x, y);
                 }
             }
             //Pipeline goes here
