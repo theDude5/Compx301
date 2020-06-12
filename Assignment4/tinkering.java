@@ -20,11 +20,11 @@ public class Counter {
 
     private final int[][] gauss_3 = {{3,5,3}, {5,8,5}, {3,5,3}};
     private final int[][] gauss_5 = {{0,1,2,1,0}, {1,3,5,3,1}, {2,5,9,5,2}, {1,3,5,3,1}, {0,1,2,1,0}};
-    private final int [][] laplace_3 = {{-1,-1,-1}, {-1,10,-1}, {-1,-1,-1}};
-    private final int [][] laplace_5 = {{0,0,-1,0,0}, {0,-1,-2,-1,0}, {-1,-2,16,-2,-1}, {0,-1,-2,-1,0}, {0,0,-1,0,0}};
-    private final int [][] blur = {{1,1,1},{1,1,1},{1,1,1}};
-    private final int [][] sobel_y = {{1,2,1}, {0,0,0}, {-1,-2,-1}};
-    private final int [][] sobel_x = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
+    private final int[][] laplace_3 = {{-1,-1,-1}, {-1,10,-1}, {-1,-1,-1}};
+    private final int[][] laplace_5 = {{0,0,-1,0,0}, {0,-1,-2,-1,0}, {-1,-2,16,-2,-1}, {0,-1,-2,-1,0}, {0,0,-1,0,0}};
+    private final int[][] blur = {{1,1,1}, {1,1,1}, {1,1,1}};
+    private final int[][] sobel_y = {{1,2,1}, {0,0,0}, {-1,-2,-1}};
+    private final int[][] sobel_x = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
     public Counter(String fileName) {
         images = new ArrayList<BufferedImage>();
         try {
