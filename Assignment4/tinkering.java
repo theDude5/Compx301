@@ -15,9 +15,6 @@ import java.util.ArrayList;
 public class Counter {
     BufferedImage image;
     ArrayList<BufferedImage> images;
-    int[][] data;
-    int a_max=0, a_min=0;
-
     private final int[][] gauss_3 = {{3,5,3}, {5,8,5}, {3,5,3}};
     private final int[][] gauss_5 = {{0,1,2,1,0}, {1,3,5,3,1}, {2,5,9,5,2}, {1,3,5,3,1}, {0,1,2,1,0}};
     private final int[][] laplace_3 = {{-1,-1,-1}, {-1,8,-1}, {-1,-1,-1}};
@@ -30,29 +27,31 @@ public class Counter {
     public Counter(String fileName) {
         images = new ArrayList<BufferedImage>();
         try {
-            image = ImageIO.read(new File(fileName));
-            data = new int[image.getWidth()][image.getHeight()];
-            
+            image = ImageIO.read(new File(fileName)); 
+
             //Pipeline goes here
             images.add(image);
             //grayscale(image);
-            process(laplace_5);
-            process(gauss_3);
+            //image = negative();
+            image = process(box);
+            image = process(gauss_3);
+            image = process(laplace_3);
+            process(sobely);
             output();
         }
         catch (IOException e) { System.err.println(e); }
     }
     
-    private void process(int[][] mask) {
+    private BufferedImage process(int[][] mask) {
         int s = mask.length/2;
-        BufferedImage im = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+        BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         for (int y = s; y < image.getHeight()-s; y++) {
             for (int x = s; x < image.getWidth()-s; x++) {
                 //apply_filter(x, y, mask);
-                im.setRGB(x, y, apply_filter(x, y, mask));
+                img.setRGB(x, y, apply_filter(x, y, mask));
             }
-        } images.add(im);
-        image = im;
+        } images.add(img);
+        return img;
     }
 
     private int apply_filter(int x, int y, int[][] mask){
@@ -73,11 +72,12 @@ public class Counter {
         return ((a<<24) | (r<<16) | (g<<8) | b);
     }
 
-    private void negative(BufferedImage img) {
+    private BufferedImage negative() {
+        BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         int p,a,r,b,g;
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {        
-                p = data[x][y];
+                p = image.getRGB(x, y);
                 a = (p>>24)&0xff; 
                 r = (p>>16)&0xff; 
                 g = (p>>8)&0xff; 
@@ -86,24 +86,27 @@ public class Counter {
                 r = 255 - r; 
                 g = 255 - g; 
                 b = 255 - b;
-                data[x][y] = (a<<24) | (r<<16) | (g<<8) | b;
+                img.setRGB(x, y, (a<<24) | (r<<16) | (g<<8) | b);
             }
-        } images.add(apply());
+        } images.add(img);
+        return img;
     }
 
-    private void grayscale(BufferedImage img) {
+    private BufferedImage grayscale() {
+        BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         int p,a,r,b,g;
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {        
-                p = data[x][y];
+                p = image.getRGB(x, y);
                 a = (p>>24)&0xff; 
                 r = (p>>16)&0xff; 
                 g = (p>>8)&0xff; 
                 b = p&0xff;
                 p = (a+r+b+g)/4;
-                data[x][y] = (p<<24) | (p<<16) | (p<<8) | p;
+                img.setRGB(x, y, (a<<24) | (r<<16) | (g<<8) | b);
             }
-        } images.add(apply());
+        } images.add(img);
+        return img;
     }
     
     private BufferedImage clone(BufferedImage img) {
@@ -111,13 +114,6 @@ public class Counter {
         for (int y = 0; y < img.getHeight(); y++) {
             for (int x = 0; x < img.getWidth(); x++) { im.setRGB(x, y, img.getRGB(x, y)); }
         } return im;
-    }
-
-    private BufferedImage apply() {
-        BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-        for (int y = 0; y < img.getHeight(); y++) {
-            for (int x = 0; x < img.getWidth(); x++) { img.setRGB(x, y, data[x][y]); }
-        } return img;
     }
 
     public void output() {
@@ -136,7 +132,7 @@ public class Counter {
     public static void main(String [] args) {
         if (args.length == 0) {
             System.out.println("Usage: java Counter <imagefile.jpg>");
-            args = new String[]{"test.jpg"};
+            args = new String[]{"45762.jpg"};
         }
         File file = new File(args[0]);
         if (file.exists()) {new Counter(args[0]);}
