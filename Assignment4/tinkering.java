@@ -20,60 +20,57 @@ public class Counter {
 
     private final int[][] gauss_3 = {{3,5,3}, {5,8,5}, {3,5,3}};
     private final int[][] gauss_5 = {{0,1,2,1,0}, {1,3,5,3,1}, {2,5,9,5,2}, {1,3,5,3,1}, {0,1,2,1,0}};
-    private final int[][] laplace_3 = {{-1,-1,-1}, {-1,10,-1}, {-1,-1,-1}};
+    private final int[][] laplace_3 = {{-1,-1,-1}, {-1,8,-1}, {-1,-1,-1}};
     private final int[][] laplace_5 = {{0,0,-1,0,0}, {0,-1,-2,-1,0}, {-1,-2,16,-2,-1}, {0,-1,-2,-1,0}, {0,0,-1,0,0}};
-    private final int[][] blur = {{1,1,1}, {1,1,1}, {1,1,1}};
+    private final int[][] box = {{1,1,1}, {1,1,1}, {1,1,1}};
     private final int[][] sobel_y = {{1,2,1}, {0,0,0}, {-1,-2,-1}};
     private final int[][] sobel_x = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
+    private final int[][] sobely = {{1,2,1}, {2,0,-2}, {-1,-2,-1}};
+    
     public Counter(String fileName) {
         images = new ArrayList<BufferedImage>();
         try {
             image = ImageIO.read(new File(fileName));
             data = new int[image.getWidth()][image.getHeight()];
-            for (int y = 0; y < image.getHeight(); y++) {
-                for (int x = 0; x < image.getWidth(); x++) { 
-                    data[x][y] = image.getRGB(x, y);
-                    //a_max = Math.max((data[x][y]>>24)&0xff, a_max);
-                    //a_min = Math.max((data[x][y]>>24)&0xff, a_min);
-                }
-            }
+            
             //Pipeline goes here
             images.add(image);
-            process(image,blur);
-            //gauss(image);
-            //gauss(image);
+            //grayscale(image);
+            process(laplace_5);
+            process(gauss_3);
             output();
         }
         catch (IOException e) { System.err.println(e); }
     }
     
-    private void process(BufferedImage img, int[][] mask) {
-        int s = (int) Math.floor(mask.length/2);
+    private void process(int[][] mask) {
+        int s = mask.length/2;
+        BufferedImage im = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         for (int y = s; y < image.getHeight()-s; y++) {
             for (int x = s; x < image.getWidth()-s; x++) {
-                apply_filter(x, y, mask);
+                //apply_filter(x, y, mask);
+                im.setRGB(x, y, apply_filter(x, y, mask));
             }
-        } images.add(apply());
+        } images.add(im);
+        image = im;
     }
 
-    private void apply_filter(int x, int y, int[][] mask){
-        int p=0, a=0, r=0, b=0, g=0,n=0, m;
+    private int apply_filter(int x, int y, int[][] mask){
+        int p=0, a=0, r=0, b=0, g=0,n=0, m; 
         for (int j = 0; j < mask.length; j++) {
            for (int i = 0; i < mask.length; i++) {
                 m = mask[i][j];
-                if (m == 0) { continue; }
-                p = data[x+i-(int) Math.floor(mask.length/2)][y+j-(int) Math.floor(mask.length/2)];
-                a += m*(p>>24)&0xff;
-                r += m*(p>>16)&0xff;
-                g += m*(p>>8)&0xff;
-                b += m*p&0xff;
-                n++;
-                //n+=Math.abs(m);
+                p = image.getRGB(x+i-mask.length/2, y+j-mask.length/2);
+                a += m*((p>>24)&0xff);
+                r += m*((p>>16)&0xff);
+                g += m*((p>>8)&0xff);
+                b += m*(p&0xff);
+                n+=m;
             }
         }
-        //a=Math.abs(a)/n; r=Math.abs(r)/n; g=Math.abs(g)/n; b=Math.abs(b)/n;
-        a =Math.min(255, Math.max(0,a/n)); r =Math.min(255, Math.max(0,r/n)); g=Math.min(255, Math.max(0,g/n)); b=Math.min(255, Math.max(0,b/n));
-        data[x][y] = ((a<<24) | (r<<16) | (g<<8) | b); 
+        if (n != 0) { a/=n; r/=n; g/=n; b/=n; }
+        a=Math.min(255, Math.max(a,0)); r=Math.min(255, Math.max(r,0)); g=Math.min(255, Math.max(g,0)); b=Math.min(255, Math.max(b,0));
+        return ((a<<24) | (r<<16) | (g<<8) | b);
     }
 
     private void negative(BufferedImage img) {
@@ -92,6 +89,28 @@ public class Counter {
                 data[x][y] = (a<<24) | (r<<16) | (g<<8) | b;
             }
         } images.add(apply());
+    }
+
+    private void grayscale(BufferedImage img) {
+        int p,a,r,b,g;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {        
+                p = data[x][y];
+                a = (p>>24)&0xff; 
+                r = (p>>16)&0xff; 
+                g = (p>>8)&0xff; 
+                b = p&0xff;
+                p = (a+r+b+g)/4;
+                data[x][y] = (p<<24) | (p<<16) | (p<<8) | p;
+            }
+        } images.add(apply());
+    }
+    
+    private BufferedImage clone(BufferedImage img) {
+        BufferedImage im = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) { im.setRGB(x, y, img.getRGB(x, y)); }
+        } return im;
     }
 
     private BufferedImage apply() {
