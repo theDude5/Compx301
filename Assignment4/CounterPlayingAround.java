@@ -109,10 +109,10 @@ public class Counter {
         System.out.println(label); //Shows how many unique cells have been identified and labelled
     }
 
-    private BufferedImage toBinary(BufferedImage img) {
+    private BufferedImage toBinary(BufferedImage img) {         //Converts the image to a black/white binary image
         BufferedImage binImg = new BufferedImage(img.getWidth(), img.getHeight(),BufferedImage.TYPE_BYTE_BINARY);
         int red;
-        int newPixel;
+        int newP;
         int threshold = 230;
         for(int i = 0; i < img.getWidth(); i++)
         {
@@ -120,39 +120,40 @@ public class Counter {
             {
                 red = new Color(img.getRGB(i, j)).getRed();
                 if(red > threshold) {
-                    newPixel = 255;
+                    newP = 255;
                 }
                 else {
-                    newPixel = 0;
+                    newP = 0;
                 }
-                newPixel = colorToRGB(newPixel, newPixel, newPixel);
-                binImg.setRGB(i, j, newPixel);
+                newP = colourToRGB(newP, newP, newP);
+                binImg.setRGB(i, j, newP);
             }
         }
         images.add(binImg);
         return binImg;
     }
-    private static int colorToRGB(int red, int green, int blue) {
-        int newPixel = 0;
-        newPixel += red;
-        newPixel = newPixel << 8;
-        newPixel += green;
-        newPixel = newPixel << 8;
-        newPixel += blue;
-        return newPixel;
+    private static int colourToRGB(int red, int green, int blue) {
+        int newP = 0;
+        newP += red;
+        newP = newP << 8;
+        newP += green;
+        newP = newP << 8;
+        newP += blue;
+        return newP;
     }
 
     private void FloodFill(BufferedImage img, int u, int v, int label) {
         ArrayList<Point> labeledPoints = new ArrayList<>();
         Stack<Point> s = new Stack<>();
-        s.add(new Point(u, v));
+        Point firstP = new Point(u, v);
+        s.add(firstP);
         while(!s.isEmpty()) {
             Point p = s.pop();
             int x = p.x;
             int y = p.y;
             if(x >= 0 && y >= 0 && x < img.getWidth() && y < img.getHeight() && img.getRGB(x, y) == 1) {
                 labeledPoints.add(p);
-               // s.putPixel(x, y, label);
+                //s.putPixel(x, y, label);
                 s.add(new Point(x + 1, y));
                 s.add(new Point(x, y + 1));
                 s.add(new Point(x, y - 1));
