@@ -15,41 +15,38 @@ import java.util.ArrayList;
 public class Counter {
     BufferedImage image;
     ArrayList<BufferedImage> images;
-    private final int[][] gauss_3 = {{3,5,3}, {5,8,5}, {3,5,3}};
-    private final int[][] gauss_5 = {{0,1,2,1,0}, {1,3,5,3,1}, {2,5,9,5,2}, {1,3,5,3,1}, {0,1,2,1,0}};
-    private final int[][] laplace_3 = {{-1,-1,-1}, {-1,8,-1}, {-1,-1,-1}};
-    private final int[][] laplace_5 = {{0,0,-1,0,0}, {0,-1,-2,-1,0}, {-1,-2,16,-2,-1}, {0,-1,-2,-1,0}, {0,0,-1,0,0}};
     private final int[][] box = {{1,1,1}, {1,1,1}, {1,1,1}};
-    private final int[][] sobel_y = {{1,2,1}, {0,0,0}, {-1,-2,-1}};
-    private final int[][] sobel_x = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
-    private final int[][] sobely = {{1,2,1}, {2,0,-2}, {-1,-2,-1}};
-    
+    private final int[][] gauss_3 = {{3,5,3}, {5,8,5}, {3,5,3}};
+    private final int[][] laplace_3 = {{-1,-1,-1}, {-1,8,-1}, {-1,-1,-1}};
+    private final int[][] laplacian = {{0,1,0}, {1,-4,1}, {0,1,0}};
+    private final int[][] gauss_5 = {{0,1,2,1,0}, {1,3,5,3,1}, {2,5,9,5,2}, {1,3,5,3,1}, {0,1,2,1,0}};
+    private final int[][] laplace_5 = {{0,0,-1,0,0}, {0,-1,-2,-1,0}, {-1,-2,16,-2,-1}, {0,-1,-2,-1,0}, {0,0,-1,0,0}};
+    private final int[][] sobel_y = {{-1,-2,-1}, {0,0,0}, {1,2,1}};
+    private final int[][] sobel_x = {{-1,0,1}, {-2,0,2}, {-1,0,1}};
+    private final int[][] sobel_y2 = {{1,2,1}, {0,0,0}, {-1,-2,-1}};
+    private final int[][] sobel_x2 = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
+    //private final int[][] kirsh_1 = {{-2,-1,0}, {-1,0,1}, {0,1,2}};
+    //private final int[][] kirsh_3 = {{0,-1,-2}, {1,0,-1}, {2,1,0}};
+
     public Counter(String fileName) {
         images = new ArrayList<BufferedImage>();
         try {
             image = ImageIO.read(new File(fileName)); 
-
             //Pipeline goes here
             images.add(image);
-            //grayscale(image);
-            //image = negative();
-            image = process(box);
-            image = process(gauss_3);
-            image = process(laplace_3);
-            process(sobely);
+            //image = process(gauss_5);
+            image = merge(image, merge(merge(process(sobel_x), process(sobel_x2)), merge(process(sobel_y), process(sobel_y2))));
+            image = sharpen(0.9);
+            negative(image);
             output();
-        }
-        catch (IOException e) { System.err.println(e); }
+        } catch (IOException e) { System.err.println(e); }
     }
     
     private BufferedImage process(int[][] mask) {
         int s = mask.length/2;
         BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         for (int y = s; y < image.getHeight()-s; y++) {
-            for (int x = s; x < image.getWidth()-s; x++) {
-                //apply_filter(x, y, mask);
-                img.setRGB(x, y, apply_filter(x, y, mask));
-            }
+            for (int x = s; x < image.getWidth()-s; x++) { img.setRGB(x, y, apply_filter(x, y, mask)); }
         } images.add(img);
         return img;
     }
@@ -72,12 +69,12 @@ public class Counter {
         return ((a<<24) | (r<<16) | (g<<8) | b);
     }
 
-    private BufferedImage negative() {
+    private BufferedImage negative(BufferedImage im) {
         BufferedImage img = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
         int p,a,r,b,g;
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {        
-                p = image.getRGB(x, y);
+                p = im.getRGB(x, y);
                 a = (p>>24)&0xff; 
                 r = (p>>16)&0xff; 
                 g = (p>>8)&0xff; 
@@ -103,12 +100,30 @@ public class Counter {
                 g = (p>>8)&0xff; 
                 b = p&0xff;
                 p = (a+r+b+g)/4;
-                img.setRGB(x, y, (a<<24) | (r<<16) | (g<<8) | b);
+                img.setRGB(x, y, (p<<24) | (p<<16) | (p<<8) | p);
             }
         } images.add(img);
         return img;
     }
+   
+    private BufferedImage merge(BufferedImage img, BufferedImage img2) {
+        BufferedImage im = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) { im.setRGB(x, y, Math.max(img.getRGB(x, y),img2.getRGB(x, y))); }
+        } images.add(im);
+        return im;
+    }
     
+    private BufferedImage sharpen(double w) {
+        BufferedImage img = merge(process(laplacian), image);
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                img.setRGB(x, y, image.getRGB(x, y)-(int) w*img.getRGB(x, y));
+            }
+        } images.add(img);
+        return img;
+    }
+
     private BufferedImage clone(BufferedImage img) {
         BufferedImage im = new BufferedImage(img.getWidth(), img.getHeight(), img.getType());
         for (int y = 0; y < img.getHeight(); y++) {
